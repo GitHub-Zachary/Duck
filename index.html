@@ -4,26 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#16633e">
-    <meta name="description" content="鸡、鸭、鹅卖肉算价，输入处理后重量和每斤单价，即可计算应收金额。">
-    <title>卖肉算价 · 家禽销售计算器</title>
+    <meta name="description" content="禽类计算器，输入处理后重量和每斤单价，即可计算鸡、鸭、鹅的应收金额。">
+    <title>禽类计算器</title>
     <style>
         :root { color-scheme: light; font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; color: #172c23; background: #f3f5ef; }
         * { box-sizing: border-box; }
         body { margin: 0; padding: 20px 16px max(24px, env(safe-area-inset-bottom)); }
         main { max-width: 480px; margin: 0 auto; }
-        header { margin-bottom: 22px; }
+        header { margin-bottom: 16px; }
         h1 { font-size: 30px; line-height: 1.3; margin: 0 0 6px; letter-spacing: 1px; }
-        header p { color: #526359; font-size: 18px; margin: 0; line-height: 1.5; }
         form { padding: 22px 20px; background: #fff; border: 1px solid #dce3da; border-radius: 20px; }
+        .input-group { position: relative; scroll-margin-block: 16px; }
         .input-group + .input-group { margin-top: 22px; }
-        label { display: block; font-size: 23px; font-weight: 700; line-height: 1.4; margin-bottom: 10px; }
+        label { position: absolute; z-index: 1; top: 12px; left: 16px; right: 16px; display: block; font-size: 23px; font-weight: 700; line-height: 1.4; cursor: text; }
         .step { display: inline-grid; place-items: center; width: 28px; height: 28px; font-size: 18px; margin-right: 8px; border-radius: 50%; background: #eaf2e9; color: #285639; vertical-align: 2px; }
         .input-wrap { position: relative; }
-        input { display: block; width: 100%; min-width: 0; height: 82px; border: 2px solid #819589; border-radius: 12px; background: #fff; color: #172c23; padding: 10px 84px 10px 16px; font: 700 40px/1.2 -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif; font-variant-numeric: tabular-nums; }
+        input { display: block; width: 100%; min-width: 0; height: 124px; border: 2px solid #819589; border-radius: 12px; background: #fff; color: #172c23; padding: 49px 84px 10px 16px; font: 700 40px/1.2 -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif; font-variant-numeric: tabular-nums; }
         input::placeholder { color: #65766b; font-size: 24px; font-weight: 400; opacity: 1; }
         input:focus { outline: 3px solid #b6d8b9; outline-offset: 2px; border-color: #16633e; }
         input[aria-invalid="true"] { border-color: #ac3029; }
-        .unit { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: #445e4f; font-size: 20px; pointer-events: none; }
+        .unit { position: absolute; right: 16px; top: calc(50% + 20px); transform: translateY(-50%); color: #445e4f; font-size: 20px; pointer-events: none; }
         button { font-family: inherit; cursor: pointer; touch-action: manipulation; }
         button:focus-visible, summary:focus-visible { outline: 3px solid #16633e; outline-offset: 4px; }
         .calculate { display: block; width: 100%; min-height: 72px; margin-top: 24px; padding: 14px; border: 0; border-radius: 12px; background: #16633e; color: #fff; font-size: 28px; font-weight: 700; }
@@ -54,8 +54,7 @@
 <body>
 <main>
     <header>
-        <h1>卖肉算价</h1>
-        <p>鸡 · 鸭 · 鹅　填两个数，就能算钱</p>
+        <h1>禽类计算器</h1>
     </header>
     <form id="calculator" novalidate>
         <div class="input-group">
@@ -98,6 +97,42 @@
     const priceInput = document.getElementById('sellingPrice');
     const result = document.getElementById('result');
     const error = document.getElementById('inputError');
+
+    // 微信 iOS 键盘可能只把输入框移到可见区，遮住它上方的标签。
+    // 按键盘弹出后的实际可见区域定位，让整组标签和输入框一起露出。
+    let inputViewportFrame = 0;
+    function keepFocusedInputVisible() {
+        inputViewportFrame = 0;
+        const input = document.activeElement;
+        if (input !== weightInput && input !== priceInput) return;
+        const viewport = window.visualViewport;
+        const visibleTop = viewport ? viewport.offsetTop : 0;
+        const visibleHeight = viewport ? viewport.height : window.innerHeight;
+        const bounds = input.closest('.input-group').getBoundingClientRect();
+        const topLimit = visibleTop + 16;
+        const bottomLimit = visibleTop + visibleHeight - 16;
+        let distance = 0;
+        if (bounds.top < topLimit) {
+            distance = bounds.top - topLimit;
+        } else if (bounds.bottom > bottomLimit) {
+            distance = Math.min(bounds.top - topLimit, bounds.bottom - bottomLimit);
+        }
+        if (Math.abs(distance) > 1) window.scrollBy(0, distance);
+    }
+    function scheduleInputVisibility() {
+        if (!inputViewportFrame) inputViewportFrame = window.requestAnimationFrame(keepFocusedInputVisible);
+    }
+    [weightInput, priceInput].forEach(function (input) {
+        input.addEventListener('focus', function () {
+            scheduleInputVisibility();
+            // 兼容键盘动画结束后才执行的浏览器自动滚动。
+            window.setTimeout(scheduleInputVisibility, 350);
+        });
+    });
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', scheduleInputVisibility);
+        window.visualViewport.addEventListener('scroll', scheduleInputVisibility);
+    }
 
     function clearResult() {
         result.hidden = true;
