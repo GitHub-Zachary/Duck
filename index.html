@@ -34,6 +34,9 @@
         .result h2 { font-size: 23px; margin: 0 0 6px; }
         .amount { color: #104b2f; font-size: 56px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.25; margin: 0 0 14px; }
         .amount small { font-size: 23px; font-weight: 600; margin-left: 6px; }
+        .weight-block { border-top: 1px solid #b8cbb5; padding-top: 16px; margin-bottom: 12px; }
+        .weight-block h3 { font-size: 23px; margin: 0 0 6px; }
+        .weight-value { font-size: 48px; margin-bottom: 0; }
         .receipt { color: #334d3c; font-size: 19px; line-height: 1.6; margin: 0; }
         .next { width: 100%; min-height: 62px; margin-top: 20px; padding: 12px; border: 2px solid #16633e; border-radius: 12px; background: #fff; color: #104b2f; font-size: 23px; font-weight: 700; }
         .next-note { color: #526359; text-align: center; font-size: 17px; margin: 8px 0 0; }
@@ -48,6 +51,7 @@
             input { font-size: 36px; padding-left: 12px; }
             input::placeholder { font-size: 22px; }
             .amount { font-size: 48px; }
+            .weight-value { font-size: 44px; }
         }
     </style>
 </head>
@@ -77,13 +81,17 @@
     <section id="result" class="result" aria-labelledby="resultHeading" aria-live="polite" hidden>
         <h2 id="resultHeading">这只应收</h2>
         <p class="amount"><span id="resultTotalSelling"></span><small>元</small></p>
-        <p class="receipt">处理后 <strong id="resultProcessedWeight"></strong> 斤，每斤 <strong id="resultSellingPrice"></strong> 元</p>
+        <div class="weight-block">
+            <h3>原始重量</h3>
+            <p class="amount weight-value"><span id="resultOriginalWeight"></span><small>斤</small></p>
+        </div>
+        <p class="receipt">每斤 <strong id="resultSellingPrice"></strong> 元</p>
         <p class="receipt">已包含 23 元杂项费用</p>
         <button type="button" id="nextCalculation" class="next">算下一只</button>
         <p class="next-note">保留单价，重新输入斤数</p>
         <details id="calculationDetails">
             <summary>查看详细计算</summary>
-            <div class="detail-row"><span>原始重量</span><strong><span id="resultOriginalWeight"></span> 斤</strong></div>
+            <div class="detail-row"><span>处理后重量</span><strong><span id="resultProcessedWeight"></span> 斤</strong></div>
             <p>原始重量 = 处理后重量 ÷ 0.71</p>
             <p>应收金额 = 原始重量 × 每斤单价 + 23 元</p>
             <p>按未四舍五入的原始重量计算，结果保留两位小数。</p>
